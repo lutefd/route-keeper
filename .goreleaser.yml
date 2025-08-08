@@ -1,11 +1,16 @@
 # .goreleaser.yml
+version: 2
+project_name: route-keeper
 dist: dist
 before:
   hooks:
     - go mod download
     - go generate ./...
 builds:
-  - env:
+  - id: route-keeper
+    binary: route-keeper
+    dir: cmd/route-keeper
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
