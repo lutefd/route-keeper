@@ -270,14 +270,32 @@ func (m *MainModel) updateInputs(msg tea.Msg) tea.Cmd {
 }
 
 func (m *MainModel) resetInputs() {
-	for i := range m.Inputs {
-		m.Inputs[i].SetValue("")
-		m.Inputs[i].Blur()
-	}
+	m.Inputs = make([]textinput.Model, 6)
+
+	m.Inputs[0] = textinput.New()
+	m.Inputs[0].Placeholder = "Profile name"
+
+	m.Inputs[1] = textinput.New()
+	m.Inputs[1].Placeholder = "https://api.example.com"
+
+	m.Inputs[2] = textinput.New()
+	m.Inputs[2].Placeholder = "/health"
+
+	m.Inputs[3] = textinput.New()
+	m.Inputs[3].Placeholder = "key1=value1,key2=value2"
+
+	m.Inputs[4] = textinput.New()
+	m.Inputs[4].Placeholder = "Authorization=Bearer token,Content-Type=application/json"
+
+	m.Inputs[5] = textinput.New()
+	m.Inputs[5].Placeholder = "5"
+
 	m.Inputs[0].Focus()
 }
 
 func (m *MainModel) populateInputsFromProfile(profile models.Profile) {
+	m.resetInputs()
+
 	m.Inputs[0].SetValue(profile.Name)
 	m.Inputs[1].SetValue(profile.BaseURL)
 	m.Inputs[2].SetValue(profile.Route)
@@ -295,11 +313,6 @@ func (m *MainModel) populateInputsFromProfile(profile models.Profile) {
 	m.Inputs[4].SetValue(strings.Join(headers, ","))
 
 	m.Inputs[5].SetValue(strconv.Itoa(profile.Interval))
-
-	for i := range m.Inputs {
-		m.Inputs[i].Blur()
-	}
-	m.Inputs[0].Focus()
 }
 
 func (m *MainModel) createProfileFromInputs() models.Profile {
