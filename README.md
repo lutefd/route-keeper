@@ -2,7 +2,7 @@
 
 A beautiful TUI (Terminal User Interface) application for monitoring and managing API endpoints with real-time status updates and historical data.
 
-![Route Keeper Screenshot](https://github.com/lutefd/route-keeper/raw/main/screenshot.png)
+![Route Keeper Screenshot](/assets//route-keeper-cassette.gif)
 
 ## ✨ Features
 
