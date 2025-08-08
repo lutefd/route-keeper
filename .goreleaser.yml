@@ -21,12 +21,11 @@ builds:
       - arm64
     mod_timestamp: "{{ .CommitTimestamp }}"
     ldflags:
-      - -s -w \
-        -X 'main.Version={{.Version}}' \
-        -X 'main.Commit={{.Commit}}' \
-        -X 'main.BuildDate={{.Date}}' \
-        -X 'main.BuiltBy=goreleaser' \
-        -X 'main.GoVersion={{.Env.GOVERSION}}'
+      - -s -w
+      - -X main.Version={{.Version}}
+      - -X main.Commit={{.Commit}}
+      - -X main.BuildDate={{.Date}}
+      - -X main.BuiltBy=goreleaser
 archives:
   - format: zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
