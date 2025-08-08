@@ -1,4 +1,4 @@
-package main
+package ui
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func (m MainModel) mainMenuView() string {
+func (m *MainModel) mainMenuView() string {
 	var houston string
-	switch m.menuIndex {
+	switch m.MenuIndex {
 	case 0:
 		houston = houstonStyle.Render(houstonNormal)
 	case 1:
@@ -38,11 +38,11 @@ func (m MainModel) mainMenuView() string {
 	var menuStrings []string
 	for i, item := range menuItems {
 		prefix := "  "
-		if i == m.menuIndex {
+		if i == m.MenuIndex {
 			prefix = "→ "
 		}
 		paddedItem := fmt.Sprintf("%-*s", maxWidth, item)
-		if i == m.menuIndex {
+		if i == m.MenuIndex {
 			menuStrings = append(menuStrings, selectedButtonStyle.Width(menuWidth).Render(prefix+paddedItem))
 		} else {
 			menuStrings = append(menuStrings, buttonStyle.Width(menuWidth).Render(prefix+paddedItem))
@@ -71,9 +71,9 @@ func (m MainModel) mainMenuView() string {
 		Render(content)
 }
 
-func (m MainModel) profileListView() string {
+func (m *MainModel) profileListView() string {
 	header := headerStyle.Render("📋 SELECT PROFILE")
-	profiles := m.profilesManager.GetProfiles()
+	profiles := m.ProfilesManager.GetProfiles()
 
 	if len(profiles) == 0 {
 		empty := lipgloss.NewStyle().
@@ -105,7 +105,7 @@ func (m MainModel) profileListView() string {
 	var profileItems []string
 	for i, profile := range profiles {
 		status := statusInactiveStyle.Render("○")
-		if i == m.profileIndex {
+		if i == m.ProfileIndex {
 			status = statusActiveStyle.Render("●")
 		}
 
@@ -126,7 +126,7 @@ func (m MainModel) profileListView() string {
 						status,
 						" ",
 						lipgloss.NewStyle().
-							Bold(i == m.profileIndex).
+							Bold(i == m.ProfileIndex).
 							Foreground(primaryColor).
 							Render(profile.Name),
 					),
@@ -139,7 +139,7 @@ func (m MainModel) profileListView() string {
 				),
 			)
 
-		if i == m.profileIndex {
+		if i == m.ProfileIndex {
 			profileCard = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(primaryColor).
@@ -183,7 +183,7 @@ func (m MainModel) profileListView() string {
 		Render(content)
 }
 
-func (m MainModel) profileFormView(title string) string {
+func (m *MainModel) profileFormView(title string) string {
 	header := headerStyle.Render("⚙️  " + title)
 
 	fields := []struct {
@@ -200,14 +200,14 @@ func (m MainModel) profileFormView(title string) string {
 
 	var formFields []string
 	for i, field := range fields {
-		isFocused := i == m.inputIndex
+		isFocused := i == m.InputIndex
 		var labelStyle lipgloss.Style
 		if isFocused {
 			labelStyle = normalTextStyle.Copy().Bold(true).Foreground(primaryColor)
 		} else {
 			labelStyle = normalTextStyle
 		}
-		inputField := m.inputs[i].View()
+		inputField := m.Inputs[i].View()
 		inputStyleToUse := inputStyle
 		if isFocused {
 			inputStyleToUse = focusedInputStyle
@@ -222,11 +222,11 @@ func (m MainModel) profileFormView(title string) string {
 	}
 
 	saveButtonLabel := "Save Profile"
-	if m.inputIndex == len(fields) {
+	if m.InputIndex == len(fields) {
 		saveButtonLabel = "💾 " + saveButtonLabel
 	}
 	saveButton := buttonStyle.Render(saveButtonLabel)
-	if m.inputIndex == len(fields) {
+	if m.InputIndex == len(fields) {
 		saveButton = selectedButtonStyle.Render(saveButtonLabel)
 	}
 
@@ -262,11 +262,11 @@ func (m MainModel) profileFormView(title string) string {
 		Render(content)
 }
 
-func (m MainModel) runningView() string {
+func (m *MainModel) runningView() string {
 	header := headerStyle.Render("🔄 MONITORING")
 
 	var status string
-	if m.isRunning {
+	if m.IsRunning {
 		status = lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			statusActiveStyle.Render("●"),
@@ -290,22 +290,22 @@ func (m MainModel) runningView() string {
 		Render(
 			lipgloss.JoinVertical(
 				lipgloss.Left,
-				lipgloss.NewStyle().Bold(true).Render(m.currentProfile.Name),
+				lipgloss.NewStyle().Bold(true).Render(m.CurrentProfile.Name),
 				"",
 				dimTextStyle.Render("URL:"),
-				normalTextStyle.Render(m.currentProfile.GetFullURL()),
+				normalTextStyle.Render(m.CurrentProfile.GetFullURL()),
 				"",
 				lipgloss.JoinHorizontal(
 					lipgloss.Left,
 					dimTextStyle.Render("Interval:"),
 					" ",
-					normalTextStyle.Render(fmt.Sprintf("%d minutes", m.currentProfile.Interval)),
+					normalTextStyle.Render(fmt.Sprintf("%d minutes", m.CurrentProfile.Interval)),
 				),
 			),
 		)
 
 	var resultsView string
-	if len(m.pingResults) > 0 {
+	if len(m.PingResults) > 0 {
 		resultsHeader := lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder(), false, false, true, false).
 			BorderForeground(borderColor).
@@ -314,7 +314,7 @@ func (m MainModel) runningView() string {
 			Render("📊 Recent Pings")
 
 		var resultLines []string
-		for i, result := range m.pingResults {
+		for i, result := range m.PingResults {
 			if i >= 5 {
 				break
 			}
@@ -353,7 +353,7 @@ func (m MainModel) runningView() string {
 	}
 
 	var instructions string
-	if m.isRunning {
+	if m.IsRunning {
 		instructions = lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			dimTextStyle.Render("s: Stop"),

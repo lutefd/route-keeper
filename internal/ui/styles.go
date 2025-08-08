@@ -1,4 +1,4 @@
-package main
+package ui
 
 import (
 	"github.com/charmbracelet/lipgloss"
@@ -19,22 +19,22 @@ var (
 	houstonNormal = `
    ╭─────────╮
    │  ◕   ◕  │
-   │   ╭─╮   │
-   ╰───╯ ╰───╯
+   │   ───   │
+   ╰─────────╯
 `
 
 	houstonHappy = `
    ╭─────────╮
    │  ◕   ◕  │
-   │   ╭─╮   │
-   ╰───╯ ╰───╯
+   │   ╰─╯   │
+   ╰─────────╯
 `
 
 	houstonThinking = `
    ╭─────────╮
-   │  ◕   ◕  │
-   │   ╭─╮   │
-   ╰───╯ ╰───╯
+   │  -   -  │
+   │   ───   │
+   ╰─────────╯
 `
 
 	houstonStyle = lipgloss.NewStyle().

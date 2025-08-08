@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"encoding/json"
@@ -22,18 +22,24 @@ type Profile struct {
 
 func (p *Profile) GetFullURL() string {
 	baseURL := strings.TrimSuffix(p.BaseURL, "/")
-	route := strings.TrimPrefix(p.Route, "/")
-	fullURL := fmt.Sprintf("%s/%s", baseURL, route)
-
-	if len(p.Params) > 0 {
-		params := url.Values{}
-		for k, v := range p.Params {
-			params.Add(k, v)
-		}
-		fullURL += "?" + params.Encode()
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return fmt.Sprintf("%s/%s", baseURL, strings.TrimPrefix(p.Route, "/"))
 	}
 
-	return fullURL
+	if p.Route != "" {
+		u.Path = filepath.Join(u.Path, strings.TrimPrefix(p.Route, "/"))
+	}
+
+	if len(p.Params) > 0 {
+		query := u.Query()
+		for k, v := range p.Params {
+			query.Add(k, v)
+		}
+		u.RawQuery = query.Encode()
+	}
+
+	return u.String()
 }
 
 type PingResult struct {
