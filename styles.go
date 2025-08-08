@@ -5,33 +5,55 @@ import (
 )
 
 var (
-	primaryColor   = lipgloss.Color("#FFD700")
-	secondaryColor = lipgloss.Color("#FFA500")
-	accentColor    = lipgloss.Color("#FFFF00")
-	successColor   = lipgloss.Color("#32CD32")
-	errorColor     = lipgloss.Color("#FF6347")
-	textColor      = lipgloss.Color("#FFFFFF")
-	dimTextColor   = lipgloss.Color("#CCCCCC")
-	bgColor        = lipgloss.Color("#1A1A1A")
-	borderColor    = lipgloss.Color("#444444")
+	primaryColor   = lipgloss.AdaptiveColor{Light: "#FFC107", Dark: "#FFD700"}
+	secondaryColor = lipgloss.AdaptiveColor{Light: "#FFB74D", Dark: "#FFA000"}
+	accentColor    = lipgloss.AdaptiveColor{Light: "#FFD54F", Dark: "#FFC107"}
+	successColor   = lipgloss.AdaptiveColor{Light: "#4CAF50", Dark: "#81C784"}
+	errorColor     = lipgloss.AdaptiveColor{Light: "#F44336", Dark: "#E57373"}
+	textColor      = lipgloss.AdaptiveColor{Light: "#333333", Dark: "#E0E0E0"}
+	dimTextColor   = lipgloss.AdaptiveColor{Light: "#757575", Dark: "#9E9E9E"}
+	bgColor        = lipgloss.AdaptiveColor{Light: "#FAFAFA", Dark: "#1E1E1E"}
+	borderColor    = lipgloss.AdaptiveColor{Light: "#E0E0E0", Dark: "#424242"}
+	highlightColor = lipgloss.AdaptiveColor{Light: "#FFF9C4", Dark: "#2A2A2A"}
 
-	// titleStyle = lipgloss.NewStyle().
-	// 		Foreground(primaryColor).
-	// 		Bold(true).
-	// 		Padding(0, 1).
-	// 		Border(lipgloss.RoundedBorder()).
-	// 		BorderForeground(primaryColor)
+	houstonNormal = `
+   ╭─────────╮
+   │  ◕   ◕  │
+   │   ╭─╮   │
+   ╰───╯ ╰───╯
+`
+
+	houstonHappy = `
+   ╭─────────╮
+   │  ◕   ◕  │
+   │   ╭─╮   │
+   ╰───╯ ╰───╯
+`
+
+	houstonThinking = `
+   ╭─────────╮
+   │  ◕   ◕  │
+   │   ╭─╮   │
+   ╰───╯ ╰───╯
+`
+
+	houstonStyle = lipgloss.NewStyle().
+			Foreground(primaryColor).
+			Align(lipgloss.Center)
 
 	subtitleStyle = lipgloss.NewStyle().
 			Foreground(secondaryColor).
-			Bold(true).
-			MarginTop(1)
+			Italic(true).
+			MarginTop(1).
+			MarginBottom(1)
 
 	normalTextStyle = lipgloss.NewStyle().
-			Foreground(textColor)
+			Foreground(textColor).
+			Background(lipgloss.NoColor{})
 
 	dimTextStyle = lipgloss.NewStyle().
-			Foreground(dimTextColor)
+			Foreground(dimTextColor).
+			Faint(true)
 
 	successStyle = lipgloss.NewStyle().
 			Foreground(successColor).
@@ -42,43 +64,48 @@ var (
 			Bold(true)
 
 	inputStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
+			Border(lipgloss.RoundedBorder(), false, false, false, false).
+			BorderBottom(true).
 			BorderForeground(primaryColor).
 			Padding(0, 1).
-			MarginBottom(1)
+			MarginBottom(1).
+			Width(50).
+			Foreground(textColor).
+			Background(bgColor)
 
-	buttonStyle = lipgloss.NewStyle().
-			Foreground(bgColor).
-			Background(primaryColor).
-			Padding(0, 2).
-			MarginRight(1).
-			Bold(true)
-
-	selectedButtonStyle = lipgloss.NewStyle().
-				Foreground(bgColor).
-				Background(accentColor).
-				Padding(0, 2).
-				MarginRight(1).
+	focusedInputStyle = inputStyle.Copy().
+				BorderForeground(accentColor).
+				Background(highlightColor).
+				Foreground(textColor).
 				Bold(true)
 
-	panelStyle = lipgloss.NewStyle().
+	buttonStyle = lipgloss.NewStyle().
+			Foreground(primaryColor).
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(borderColor).
-			Padding(1, 2).
-			MarginBottom(1)
+			BorderForeground(primaryColor).
+			Padding(0, 2).
+			MarginRight(2).
+			Bold(true).
+			Background(lipgloss.NoColor{})
+
+	selectedButtonStyle = buttonStyle.Copy().
+				Foreground(lipgloss.Color("#000000")).
+				Background(accentColor).
+				BorderForeground(accentColor)
 
 	headerStyle = lipgloss.NewStyle().
 			Foreground(primaryColor).
 			Bold(true).
 			Align(lipgloss.Center).
-			Border(lipgloss.DoubleBorder()).
-			BorderForeground(primaryColor).
-			Padding(0, 2)
+			MarginBottom(1).
+			Underline(true).
+			UnderlineSpaces(true)
 
 	statusActiveStyle = lipgloss.NewStyle().
 				Foreground(successColor).
 				Bold(true)
 
 	statusInactiveStyle = lipgloss.NewStyle().
-				Foreground(dimTextColor)
+				Foreground(dimTextColor).
+				Faint(true)
 )

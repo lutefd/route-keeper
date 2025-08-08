@@ -2,11 +2,22 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"time"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (m MainModel) mainMenuView() string {
+	var houston string
+	switch m.menuIndex {
+	case 0:
+		houston = houstonStyle.Render(houstonNormal)
+	case 1:
+		houston = houstonStyle.Foreground(accentColor).Render(houstonHappy)
+	default:
+		houston = houstonStyle.Render(houstonThinking)
+	}
+
 	header := headerStyle.Render("🚀 ROUTE KEEPER")
 	subtitle := subtitleStyle.Render("Houston, we have connectivity!")
 
@@ -16,136 +27,300 @@ func (m MainModel) mainMenuView() string {
 		"Quit",
 	}
 
+	maxWidth := 0
+	for _, item := range menuItems {
+		if len(item) > maxWidth {
+			maxWidth = len(item)
+		}
+	}
+	menuWidth := maxWidth + 8
+
 	var menuStrings []string
 	for i, item := range menuItems {
+		prefix := "  "
 		if i == m.menuIndex {
-			menuStrings = append(menuStrings, selectedButtonStyle.Render("▶ "+item))
+			prefix = "→ "
+		}
+		paddedItem := fmt.Sprintf("%-*s", maxWidth, item)
+		if i == m.menuIndex {
+			menuStrings = append(menuStrings, selectedButtonStyle.Width(menuWidth).Render(prefix+paddedItem))
 		} else {
-			menuStrings = append(menuStrings, buttonStyle.Render("  "+item))
+			menuStrings = append(menuStrings, buttonStyle.Width(menuWidth).Render(prefix+paddedItem))
 		}
 	}
 
-	menu := strings.Join(menuStrings, "\n")
+	menu := lipgloss.JoinVertical(lipgloss.Left, menuStrings...)
 
-	instructions := dimTextStyle.Render("\nUse ↑/↓ to navigate, Enter to select, q to quit")
+	content := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		lipgloss.NewStyle().Padding(0, 4, 0, 0).Render(houston),
+		lipgloss.JoinVertical(
+			lipgloss.Left,
+			header,
+			"",
+			subtitle,
+			"",
+			menu,
+			"",
+			dimTextStyle.Render("Use ↑/↓ to navigate • Enter to select • q to quit"),
+		),
+	)
 
-	content := fmt.Sprintf("%s\n\n%s\n\n%s%s", header, subtitle, menu, instructions)
-
-	return panelStyle.Render(content)
+	return lipgloss.NewStyle().
+		Padding(2, 4).
+		Render(content)
 }
 
 func (m MainModel) profileListView() string {
 	header := headerStyle.Render("📋 SELECT PROFILE")
-
 	profiles := m.profilesManager.GetProfiles()
 
 	if len(profiles) == 0 {
-		empty := errorStyle.Render("No profiles found!")
-		instructions := dimTextStyle.Render("\nPress 'c' to create a new profile, or Esc to go back")
-		return panelStyle.Render(fmt.Sprintf("%s\n\n%s%s", header, empty, instructions))
+		empty := lipgloss.NewStyle().
+			Foreground(primaryColor).
+			Italic(true).
+			Render("No profiles found")
+
+		instructions := lipgloss.JoinVertical(
+			lipgloss.Left,
+			"",
+			dimTextStyle.Render("Press 'c' to create a new profile"),
+			dimTextStyle.Render("or press Esc to go back"),
+		)
+
+		content := lipgloss.JoinVertical(
+			lipgloss.Center,
+			header,
+			"",
+			empty,
+			"",
+			instructions,
+		)
+
+		return lipgloss.NewStyle().
+			Padding(2, 4).
+			Render(content)
 	}
 
-	var profileList []string
+	var profileItems []string
 	for i, profile := range profiles {
-		status := statusInactiveStyle.Render("●")
-		prefix := "  "
-
+		status := statusInactiveStyle.Render("○")
 		if i == m.profileIndex {
 			status = statusActiveStyle.Render("●")
-			prefix = "▶ "
 		}
 
 		url := profile.GetFullURL()
-		interval := fmt.Sprintf("every %d min", profile.Interval)
+		interval := fmt.Sprintf("⏱  every %d min", profile.Interval)
 
-		profileInfo := fmt.Sprintf("%s%s%s\n   %s %s",
-			prefix,
-			status,
-			normalTextStyle.Render(" "+profile.Name),
-			dimTextStyle.Render(url),
-			dimTextStyle.Render("("+interval+")"),
-		)
+		profileCard := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder(), false, false, false, false).
+			BorderLeft(true).
+			BorderForeground(primaryColor).
+			Padding(0, 2).
+			Margin(0, 0, 1, 0).
+			Render(
+				lipgloss.JoinVertical(
+					lipgloss.Left,
+					lipgloss.JoinHorizontal(
+						lipgloss.Top,
+						status,
+						" ",
+						lipgloss.NewStyle().
+							Bold(i == m.profileIndex).
+							Foreground(primaryColor).
+							Render(profile.Name),
+					),
+					lipgloss.NewStyle().
+						MarginLeft(2).
+						Render(dimTextStyle.Render(url)),
+					lipgloss.NewStyle().
+						MarginLeft(2).
+						Render(dimTextStyle.Render(interval)),
+				),
+			)
 
-		profileList = append(profileList, profileInfo)
+		if i == m.profileIndex {
+			profileCard = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(primaryColor).
+				BorderTop(true).
+				BorderRight(true).
+				BorderBottom(true).
+				BorderLeft(true).
+				Padding(1, 2).
+				Margin(0, 0, 1, 0).
+				Render(profileCard)
+		}
+
+		profileItems = append(profileItems, profileCard)
 	}
 
-	list := strings.Join(profileList, "\n\n")
-	instructions := dimTextStyle.Render("\n\nEnter: Run • e: Edit • d: Delete • c: Create New • Esc: Back")
+	instructions := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		dimTextStyle.Render("Enter: Run"),
+		lipgloss.NewStyle().Margin(0, 2).Render("•"),
+		dimTextStyle.Render("e: Edit"),
+		lipgloss.NewStyle().Margin(0, 2).Render("•"),
+		dimTextStyle.Render("d: Delete"),
+		lipgloss.NewStyle().Margin(0, 2).Render("•"),
+		dimTextStyle.Render("c: Create New"),
+		lipgloss.NewStyle().Margin(0, 2).Render("•"),
+		dimTextStyle.Render("Esc: Back"),
+	)
 
-	content := fmt.Sprintf("%s\n\n%s%s", header, list, instructions)
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		header,
+		"",
+		lipgloss.JoinVertical(lipgloss.Left, profileItems...),
+		"",
+		instructions,
+	)
 
-	return panelStyle.Render(content)
+	return lipgloss.NewStyle().
+		Padding(2, 4).
+		MaxWidth(80).
+		Render(content)
 }
 
 func (m MainModel) profileFormView(title string) string {
 	header := headerStyle.Render("⚙️  " + title)
 
-	fields := []string{
-		"Profile Name:",
-		"Base URL:",
-		"Route:",
-		"URL Params:",
-		"Headers:",
-		"Interval (minutes):",
+	fields := []struct {
+		label       string
+		description string
+	}{
+		{"Profile Name", "A name to identify this profile"},
+		{"Base URL", "The base URL to monitor (e.g., https://api.example.com)"},
+		{"Route", "The API endpoint route (e.g., /health)"},
+		{"URL Params", "Optional query parameters (e.g., key1=value1&key2=value2)"},
+		{"Headers", "Request headers (e.g., Authorization=Bearer token)"},
+		{"Interval (minutes)", "How often to check the endpoint (minimum 1 minute)"},
 	}
 
 	var formFields []string
 	for i, field := range fields {
-		fieldStyle := normalTextStyle
-		if i == m.inputIndex {
-			fieldStyle = successStyle
+		isFocused := i == m.inputIndex
+		var labelStyle lipgloss.Style
+		if isFocused {
+			labelStyle = normalTextStyle.Copy().Bold(true).Foreground(primaryColor)
+		} else {
+			labelStyle = normalTextStyle
 		}
-
-		formFields = append(formFields,
-			fieldStyle.Render(field)+"\n"+
-				inputStyle.Render(m.inputs[i].View()),
+		inputField := m.inputs[i].View()
+		inputStyleToUse := inputStyle
+		if isFocused {
+			inputStyleToUse = focusedInputStyle
+		}
+		formField := lipgloss.JoinVertical(
+			lipgloss.Left,
+			labelStyle.Render(field.label),
+			dimTextStyle.Italic(true).Render(field.description),
+			inputStyleToUse.Render(inputField),
 		)
+		formFields = append(formFields, formField)
 	}
 
-	form := strings.Join(formFields, "\n")
-
-	saveButton := buttonStyle.Render("Save Profile")
-	if m.inputIndex == len(m.inputs)-1 {
-		saveButton = selectedButtonStyle.Render("Save Profile")
+	saveButtonLabel := "Save Profile"
+	if m.inputIndex == len(fields) {
+		saveButtonLabel = "💾 " + saveButtonLabel
+	}
+	saveButton := buttonStyle.Render(saveButtonLabel)
+	if m.inputIndex == len(fields) {
+		saveButton = selectedButtonStyle.Render(saveButtonLabel)
 	}
 
-	instructions := dimTextStyle.Render("\nTab/↑↓: Navigate • Enter: Next/Save • Esc: Cancel")
+	formContent := lipgloss.JoinVertical(
+		lipgloss.Left,
+		header,
+		"",
+		lipgloss.JoinVertical(
+			lipgloss.Left,
+			append(formFields, "", lipgloss.NewStyle().Align(lipgloss.Center).Render(saveButton))...,
+		),
+	)
 
-	content := fmt.Sprintf("%s\n\n%s\n\n%s%s", header, form, saveButton, instructions)
+	instructions := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		dimTextStyle.Render("Tab/↑↓: Navigate"),
+		lipgloss.NewStyle().Margin(0, 2).Render("•"),
+		dimTextStyle.Render("Enter: Next/Save"),
+		lipgloss.NewStyle().Margin(0, 2).Render("•"),
+		dimTextStyle.Render("Esc: Cancel"),
+	)
 
-	return panelStyle.Render(content)
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		formContent,
+		"",
+		instructions,
+	)
+
+	return lipgloss.NewStyle().
+		Padding(2, 4).
+		MaxWidth(80).
+		Render(content)
 }
 
 func (m MainModel) runningView() string {
-	header := headerStyle.Render("🔄 KEEPING ALIVE")
-
-	profileInfo := fmt.Sprintf(
-		"%s\n%s\n%s",
-		normalTextStyle.Render("Profile: "+m.currentProfile.Name),
-		normalTextStyle.Render("URL: "+m.currentProfile.GetFullURL()),
-		normalTextStyle.Render(fmt.Sprintf("Interval: %d minutes", m.currentProfile.Interval)),
-	)
+	header := headerStyle.Render("🔄 MONITORING")
 
 	var status string
 	if m.isRunning {
-		status = statusActiveStyle.Render("● ACTIVE - Keeping route alive...")
+		status = lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			statusActiveStyle.Render("●"),
+			" ",
+			statusActiveStyle.Render("ACTIVE - Monitoring endpoint..."),
+		)
 	} else {
-		status = statusInactiveStyle.Render("● STOPPED")
+		status = lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			statusInactiveStyle.Render("●"),
+			" ",
+			statusInactiveStyle.Render("PAUSED - Monitoring paused"),
+		)
 	}
+
+	profileCard := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(borderColor).
+		Padding(1, 2).
+		Margin(1, 0, 2, 0).
+		Render(
+			lipgloss.JoinVertical(
+				lipgloss.Left,
+				lipgloss.NewStyle().Bold(true).Render(m.currentProfile.Name),
+				"",
+				dimTextStyle.Render("URL:"),
+				normalTextStyle.Render(m.currentProfile.GetFullURL()),
+				"",
+				lipgloss.JoinHorizontal(
+					lipgloss.Left,
+					dimTextStyle.Render("Interval:"),
+					" ",
+					normalTextStyle.Render(fmt.Sprintf("%d minutes", m.currentProfile.Interval)),
+				),
+			),
+		)
 
 	var resultsView string
 	if len(m.pingResults) > 0 {
-		resultsView = subtitleStyle.Render("\nRecent Pings:")
+		resultsHeader := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder(), false, false, true, false).
+			BorderForeground(borderColor).
+			Padding(0, 0, 1, 0).
+			Margin(0, 0, 1, 0).
+			Render("📊 Recent Pings")
 
+		var resultLines []string
 		for i, result := range m.pingResults {
-			if i >= 10 {
+			if i >= 5 {
 				break
 			}
-
 			timestamp := result.Timestamp.Format("15:04:05")
 			var statusIcon, statusText string
-
-			if result.Success {
+			if result.Error == nil && result.StatusCode >= 200 && result.StatusCode < 300 {
 				statusIcon = successStyle.Render("✓")
 				statusText = successStyle.Render(fmt.Sprintf("HTTP %d", result.StatusCode))
 			} else {
@@ -156,36 +331,59 @@ func (m MainModel) runningView() string {
 					statusText = errorStyle.Render(fmt.Sprintf("HTTP %d", result.StatusCode))
 				}
 			}
-
 			duration := dimTextStyle.Render(fmt.Sprintf("(%v)", result.Duration.Truncate(time.Millisecond)))
-
-			resultLine := fmt.Sprintf("  %s %s %s %s",
+			resultLine := lipgloss.JoinHorizontal(
+				lipgloss.Left,
 				dimTextStyle.Render(timestamp),
+				"  ",
 				statusIcon,
+				" ",
 				statusText,
+				" ",
 				duration,
 			)
-
-			resultsView += "\n" + resultLine
+			resultLines = append(resultLines, resultLine)
 		}
+		resultsView = lipgloss.JoinVertical(
+			lipgloss.Left,
+			append([]string{resultsHeader}, resultLines...)...,
+		)
 	} else {
-		resultsView = dimTextStyle.Render("\nNo ping results yet...")
+		resultsView = dimTextStyle.Italic(true).Render("No ping results yet...")
 	}
 
 	var instructions string
 	if m.isRunning {
-		instructions = dimTextStyle.Render("\n\ns: Stop • Esc/q: Exit")
+		instructions = lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			dimTextStyle.Render("s: Stop"),
+			lipgloss.NewStyle().Margin(0, 2).Render("•"),
+			dimTextStyle.Render("Esc/q: Exit"),
+		)
 	} else {
-		instructions = dimTextStyle.Render("\n\ns: Start • Esc/q: Exit")
+		instructions = lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			dimTextStyle.Render("s: Start"),
+			lipgloss.NewStyle().Margin(0, 2).Render("•"),
+			dimTextStyle.Render("Esc/q: Exit"),
+		)
 	}
 
-	content := fmt.Sprintf("%s\n\n%s\n\n%s%s%s",
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
 		header,
-		profileInfo,
+		"",
 		status,
+		"",
+		profileCard,
+		"",
 		resultsView,
+		"",
 		instructions,
 	)
 
-	return panelStyle.Render(content)
+	return lipgloss.NewStyle().
+		Padding(2, 4).
+		MaxWidth(80).
+		Render(content)
 }
