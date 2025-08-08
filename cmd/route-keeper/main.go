@@ -12,11 +12,11 @@ import (
 )
 
 var (
-	Version   = "dev"
-	Commit    = "none"
-	BuildDate = "unknown"
-	BuiltBy   = "unknown"
-	GoVersion = "unknown"
+	Version   = "v.0.1.2"
+	Commit    = "unkownw"
+	BuildDate = "08/08/2025"
+	BuiltBy   = "Luis Dourado"
+	GoVersion = "1.24.1"
 )
 
 func printVersion() {
