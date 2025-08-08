@@ -1,0 +1,55 @@
+# .goreleaser.yml
+dist: dist
+before:
+  hooks:
+    - go mod download
+    - go generate ./...
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    ldflags:
+      - -s -w \
+        -X 'main.Version={{.Version}}' \
+        -X 'main.Commit={{.Commit}}' \
+        -X 'main.BuildDate={{.Date}}' \
+        -X 'main.BuiltBy=goreleaser' \
+        -X 'main.GoVersion={{.Env.GOVERSION}}'
+archives:
+  - format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - "^refactor:"
+      - "^style:"
+release:
+  github:
+    owner: lutefd
+    name: route-keeper
+  draft: true
+  prerelease: auto
+  name_template: "{{.ProjectName}} {{.Version}}"
+  extra_files:
+    - glob: ./LICENSE
+    - glob: ./README.md
+    - glob: ./CHANGELOG.md
