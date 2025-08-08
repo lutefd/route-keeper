@@ -18,7 +18,7 @@ func (m *MainModel) mainMenuView() string {
 		houston = houstonStyle.Render(houstonThinking)
 	}
 
-	header := headerStyle.Render("🚀 ROUTE KEEPER")
+	header := headerStyle.Render("ROUTE KEEPER")
 	subtitle := subtitleStyle.Render("Houston, we have connectivity!")
 
 	menuItems := []string{
@@ -191,7 +191,7 @@ func (m *MainModel) profileFormView(title string) string {
 		description string
 	}{
 		{"Profile Name", "A name to identify this profile"},
-		{"Base URL", "The base URL to monitor (e.g., https://api.example.com)"},
+		{"Base URL", "The base URL to monitor (e.g., https:`//`api.example.com)"},
 		{"Route", "The API endpoint route (e.g., /health)"},
 		{"URL Params", "Optional query parameters (e.g., key1=value1&key2=value2)"},
 		{"Headers", "Request headers (e.g., Authorization=Bearer token)"},
